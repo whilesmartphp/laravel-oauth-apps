@@ -120,7 +120,37 @@ POST /api/apps/{app}/api-keys
 
 ### API Key Authentication
 
-To protect your API routes, use the `AuthenticateApiKey` middleware. Applications authenticate using the API Keys.
+Add the `Whilesmart\LaravelAppAuthentication\Http\Middleware\EnforceHeaderAuth` middleware to your `Kernel.php` if
+you are using Laravel <11 
+```php
+    protected $routeMiddleware = [
+        ...,
+        'AuthenticateApiKey' => \Whilesmart\LaravelAppAuthentication\Http\Middleware\EnforceHeaderAuth::class,
+    ];
+
+```
+
+or `bootstrap/app.php` if you are using Laravel 11+
+```php
+return Application::configure(basePath: dirname(__DIR__))
+    ->withRouting(
+    web: __DIR__.'/../routes/web.php',
+        // api: __DIR__.'/../routes/api.php',
+        commands: __DIR__.'/../routes/console.php',
+        // channels: __DIR__.'/../routes/channels.php',
+        health: '/up',
+    )
+    ->withMiddleware(function (Middleware $middleware) {
+        ...
+        $middleware->alias(['auth.api.key'=> \Whilesmart\LaravelAppAuthentication\Http\Middleware\EnforceHeaderAuth::class]);
+
+    })
+    ->withExceptions(function (Exceptions $exceptions) {
+        //
+    })->create();
+```
+
+To protect your API routes, use the `auth.api.key` middleware. Applications authenticate using the API Keys.
 
 ```php
 // routes/api.php
@@ -129,7 +159,7 @@ Route::middleware('auth.api.key')->group(function () {
 });
 ```
 
-To use the API, provide the API key generated for the application in the X-YOURAPP-API-KEY header.
+To use the API, provide the API key generated for the application in the X-client-id header, and the secret in the X-secret-id
 
 Please feel free to contribute by submitting pull requests or reporting issues.
 

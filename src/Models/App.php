@@ -17,9 +17,9 @@ class App extends BaseClient
         return [
             'slug' => [
                 'source' => 'name',
-                'onUpdate' => true, // Ensure this key is included
-                'separator' => '-', // Ensure this key is included
-                'method' => null, // Ensure this key is included
+                'onUpdate' => true,
+                'separator' => '-',
+                'method' => null,
                 'unique' => true,
                 'uniqueSuffix' => null,
                 'firstUniqueSuffix' => 2,

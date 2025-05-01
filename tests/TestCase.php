@@ -186,7 +186,6 @@ class TestCase extends \Orchestra\Testbench\TestCase
         $response->assertStatus(201);
 
         $key = $response->json();
-        var_dump($key);
         $response = $this->actingAs($user)->deleteJson("/api/apps/{$createdApp['slug']}/api-keys/{$key['id']}");
         $response->assertStatus(204);
     }

@@ -47,5 +47,11 @@ class AppAuthenticationServiceProvider extends ServiceProvider
         $this->publishesMigrations([
             __DIR__.'/../database/migrations' => database_path('migrations'),
         ], ['app-authentication', 'app-authentication-migrations']);
+
+        // Publish middleware
+        $this->publishes([
+            __DIR__.'/Http/Middleware' => app_path('Http/Middleware'),
+        ], ['app-authentication', 'app-authentication-middleware']);
+
     }
 }
