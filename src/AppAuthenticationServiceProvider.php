@@ -37,11 +37,6 @@ class AppAuthenticationServiceProvider extends ServiceProvider
             __DIR__.'/Http/Controllers' => app_path('Http/Controllers/Api'),
         ], ['app-authentication', 'app-authentication-controllers']);
 
-        // Publish config
-        $this->publishes([
-            __DIR__.'/../config/app-authentication.php' => config_path('app-authentication.php'),
-        ], ['app-authentication', 'app-authentication-controllers']);
-
         $this->loadMigrationsFrom(__DIR__.'/../migrations');
 
         $this->publishesMigrations([
