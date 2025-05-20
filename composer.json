@@ -1,0 +1,74 @@
+{
+    "name": "whilesmart/laravel-app-authentication",
+    "description": "Package for managing app authentication across our projects",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Kofi Mokome",
+            "email": "kofimokome10@gmail.com"
+        },
+        {
+            "name": "WhileSmart",
+            "email": "folks@whilesmart.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Whilesmart\\LaravelAppAuthentication\\": "src"
+        }
+    },
+    "require": {
+        "laravel/passport": "^12.0",
+        "cviebrock/eloquent-sluggable": "^11.0",
+        "spatie/laravel-fractal": "^6.3.2"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Whilesmart\\LaravelAppAuthentication\\AppAuthenticationServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "require-dev": {
+        "zircote/swagger-php": "^5.0",
+        "orchestra/testbench": "*",
+        "nunomaduro/collision": "v8.x-dev",
+        "laravel/pint": "^1.18",
+        "fakerphp/faker": "1.24.x-dev"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Workbench\\App\\": "workbench/app/",
+            "Workbench\\Database\\Factories\\": "workbench/database/factories/",
+            "Workbench\\Database\\Seeders\\": "workbench/database/seeders/"
+        }
+    },
+    "scripts": {
+        "pint": [
+            "./vendor/bin/pint"
+        ],
+        "pint:test": [
+            "./vendor/bin/pint --test"
+        ],
+        "post-autoload-dump": [
+            "@clear",
+            "@prepare"
+        ],
+        "clear": "@php vendor/bin/testbench package:purge-skeleton --ansi",
+        "prepare": "@php vendor/bin/testbench package:discover --ansi",
+        "build": "@php vendor/bin/testbench workbench:build --ansi",
+        "serve": [
+            "Composer\\Config::disableProcessTimeout",
+            "@build",
+            "@php vendor/bin/testbench serve --ansi"
+        ],
+        "lint": [
+            "@php vendor/bin/pint --ansi"
+        ],
+        "test": [
+            "@clear",
+            "@php vendor/bin/phpunit"
+        ]
+    }
+}

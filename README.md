@@ -20,29 +20,83 @@ A Laravel package providing out-of-the-box authentication for applications and A
 
 ## Installation
 
-1.  **Require the package via Composer:**
+### 1. Require the package
 
-    ```bash
-    composer require whilesmart/laravel-app-authentication
-    ```
+   ```bash
+   $ composer require whilesmart/laravel-app-authentication
+   ```
 
-2.  **Publish the configuration and migrations:**
+This package uses Laravel/passport. Please run the command below if you do not yet have passport configured
 
-    ```bash
-    php artisan vendor:publish --provider="WhileSmart\LaravelAppAuthentication\Providers\AppAuthenticationServiceProvider"
-    php artisan migrate
-    ```
+```bash
+$ php artisan install:api --passport
+```
 
-3.  **Optional: OpenAPI Documentation:**
+### 2. Publish the configuration and migrations:
+
+You do not need to publish the migrations and configurations except if you want to make modifications. You can choose to
+publish
+the migrations, routes, controllers separately or all at once.
+
+#### 2.1 Publishing only the routes
+
+Run the command below to publish only the routes.
+
+```bash
+$ php artisan vendor:publish --tag=app-authentication-routes
+$ php artisan migrate
+```
+
+The routes will be available at `routes/app-authentication.php`. You should `require` this file in your `api.php` file.
+
+```php
+require 'app-authentication.php';
+```
+
+#### 2.2 Publishing only the migrations
+
++If you would like to make changes to the migration files, run the command below to publish only the migrations.
+
+```bash
+$ php artisan vendor:publish --tag=app-authentication-migrations
+$ php artisan migrate
+```
+
+The migrations will be available in the `database/migrations` folder.
+
+#### 2.3 Publish only the controllers
+
+To publish the controllers, run the command below
+
+```bash
+$ php artisan vendor:publish --tag=app-authentication-controllers
+$ php artisan migrate
+```
+
+The controllers will be available in the `app/Http/Controllers/Api/Auth` directory.
+Finally, change the namespace in the published controllers to your namespace.
+
+#### Note: Publishing the controllers will also publish the routes. See section 2.1
+
+#### 2.4 Publish everything
+
+To publish the migrations, routes and controllers, you can run the command below
+
+```bash
+$ php artisan vendor:publish --tag=app-authentication
+$ php artisan migrate
+```
+
+#### Note: See section 2.1 above to make the routes accessible
+
+3. **Optional: OpenAPI Documentation:**
 
     * Install and configure an OpenAPI package (e.g., `darkaonline/l5-swagger`).
     * Add necessary annotations to your controllers.
 
 ## Configuration
 
-* The configuration file `config/app-authentication.php` allows you to customize various settings, including:
-    * API key length.
-    * API key expiration.
+* The configuration file `config/app-authentication.php` allows you to customize various settings
 
 ## Usage
 
@@ -62,12 +116,41 @@ After installation, the following API endpoints will be available:
 
 POST /api/apps/{app}/api-keys
 
-
 (Where `{app}` is the id of the app)
 
 ### API Key Authentication
 
-To protect your API routes, use the `AuthenticateApiKey` middleware. Applications authenticate using the API Keys.
+Add the `Whilesmart\LaravelAppAuthentication\Http\Middleware\EnforceHeaderAuth` middleware to your `Kernel.php` if
+you are using Laravel <11 
+```php
+    protected $routeMiddleware = [
+        ...,
+        'AuthenticateApiKey' => \Whilesmart\LaravelAppAuthentication\Http\Middleware\EnforceHeaderAuth::class,
+    ];
+
+```
+
+or `bootstrap/app.php` if you are using Laravel 11+
+```php
+return Application::configure(basePath: dirname(__DIR__))
+    ->withRouting(
+    web: __DIR__.'/../routes/web.php',
+        // api: __DIR__.'/../routes/api.php',
+        commands: __DIR__.'/../routes/console.php',
+        // channels: __DIR__.'/../routes/channels.php',
+        health: '/up',
+    )
+    ->withMiddleware(function (Middleware $middleware) {
+        ...
+        $middleware->alias(['auth.api.key'=> \Whilesmart\LaravelAppAuthentication\Http\Middleware\EnforceHeaderAuth::class]);
+
+    })
+    ->withExceptions(function (Exceptions $exceptions) {
+        //
+    })->create();
+```
+
+To protect your API routes, use the `auth.api.key` middleware. Applications authenticate using the API Keys.
 
 ```php
 // routes/api.php
@@ -76,10 +159,9 @@ Route::middleware('auth.api.key')->group(function () {
 });
 ```
 
-To use the API, provide the API key generated for the application in the X-YOURAPP-API-KEY header.
+To use the API, provide the API key generated for the application in the X-client-id header, and the secret in the X-secret-id
 
 Please feel free to contribute by submitting pull requests or reporting issues.
-
 
 ### License
 
