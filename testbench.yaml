@@ -1,8 +1,8 @@
 laravel: '@testbench'
 
 providers:
-   - Whilesmart\LaravelAppAuthentication\AppAuthenticationServiceProvider
-   - Workbench\App\Providers\WorkbenchServiceProvider
+  - Whilesmart\LaravelAppAuthentication\AppAuthenticationServiceProvider
+  - Workbench\App\Providers\WorkbenchServiceProvider
 
 migrations:
 #  - workbench/database/migrations
@@ -16,9 +16,10 @@ workbench:
   health: false
   discovers:
     web: true
-    api: false
-    commands: false
+    api: true
+    commands: true
     components: false
+    factories: true
     views: false
   build:
     - asset-publish

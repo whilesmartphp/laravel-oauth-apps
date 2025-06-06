@@ -31,6 +31,14 @@ This package uses Laravel/passport. Please run the command below if you do not y
 ```bash
 $ php artisan install:api --passport
 ```
+Additionally, this command will ask if you would like to use UUIDs as the primary key value of the Passport Client model instead of auto-incrementing integer
+. Select UUID
+
+Or simply run 
+
+```bash
+$ php artisan passport:install --uuids
+```
 
 ### 2. Publish the configuration and migrations:
 
@@ -159,7 +167,7 @@ Route::middleware('auth.api.key')->group(function () {
 });
 ```
 
-To use the API, provide the API key generated for the application in the X-client-id header, and the secret in the X-secret-id
+To use the API, provide the id generated for the application in the **X-client-id** header, and the secret in the **X-secret-id**
 
 Please feel free to contribute by submitting pull requests or reporting issues.
 
