@@ -66,7 +66,7 @@ class AppController extends Controller
         ]);
 
         $user = $request->user();
-        $client = $this->clientRepository->create($user->id, $request->name, '');
+        $client = $this->clientRepository->createAuthorizationCodeGrantClient($request->name, [], true, $user);
         $client->description = $request->description;
         $slug = Str::slug($request->name);
         $originalSlug = $slug;
