@@ -43,12 +43,8 @@ jobs:
           echo "DB_USERNAME=root" >> workbench/.env
           echo "DB_PASSWORD=password" >> workbench/.env
           echo "APP_ENV=testing" >> workbench/.env
-      #      - name: Update Composer Dependencies
-      #        run: composer update -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist
       - name: Install dependencies
         run: composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist
-      #      - name: Run migrations
-      #        run: vendor/bin/testbench migrate
       - name: Run tests
         run: vendor/bin/testbench package:test
       - name: Run linter test

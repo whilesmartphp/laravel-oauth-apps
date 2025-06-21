@@ -2,13 +2,11 @@ laravel: '@testbench'
 
 providers:
   - Whilesmart\LaravelAppAuthentication\AppAuthenticationServiceProvider
-  - Workbench\App\Providers\WorkbenchServiceProvider
 
 migrations:
 #  - workbench/database/migrations
 
-seeders:
-  - Workbench\Database\Seeders\DatabaseSeeder
+
 
 workbench:
   start: '/'
