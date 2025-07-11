@@ -24,7 +24,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
         $user = $this->create_test_user();
 
         $faker = Factory::create();
-        $response = $this->actingAs($user)->postJson('/api/apps', [
+        $response = $this->actingAs($user)->postJson('/apps', [
             'name' => $faker->unique()->name,
             'description' => $faker->text,
         ]);
@@ -51,14 +51,14 @@ class TestCase extends \Orchestra\Testbench\TestCase
         $appName = fake()->unique()->name;
 
         $faker = Factory::create();
-        $response = $this->actingAs($user)->postJson('/api/apps', [
+        $response = $this->actingAs($user)->postJson('/apps', [
             'name' => $appName,
             'description' => $faker->text,
         ]);
 
         $response->assertStatus(200);
 
-        $response = $this->actingAs($user)->getJson('/api/apps');
+        $response = $this->actingAs($user)->getJson('/apps');
         $response->assertStatus(200);
 
         $data = $response->json('data');
@@ -72,7 +72,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
         $appName = fake()->unique()->name;
 
         $faker = Factory::create();
-        $response = $this->actingAs($user)->postJson('/api/apps', [
+        $response = $this->actingAs($user)->postJson('/apps', [
             'name' => $appName,
             'description' => $faker->text,
         ]);
@@ -80,7 +80,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
 
         $response->assertStatus(200);
 
-        $response = $this->actingAs($user)->getJson("/api/apps/{$createdApp['slug']}");
+        $response = $this->actingAs($user)->getJson("/apps/{$createdApp['slug']}");
         $response->assertStatus(200);
 
         $data = $response->json('data');
@@ -94,7 +94,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
         $appName = fake()->unique()->name;
 
         $faker = Factory::create();
-        $response = $this->actingAs($user)->postJson('/api/apps', [
+        $response = $this->actingAs($user)->postJson('/apps', [
             'name' => $appName,
             'description' => $faker->text,
         ]);
@@ -105,11 +105,11 @@ class TestCase extends \Orchestra\Testbench\TestCase
         $newName = fake()->unique()->name;
         $newDescription = 'new description';
 
-        $response = $this->actingAs($user)->putJson("/api/apps/{$createdApp['slug']}", ['name' => $newName, 'description' => $newDescription]);
+        $response = $this->actingAs($user)->putJson("/apps/{$createdApp['slug']}", ['name' => $newName, 'description' => $newDescription]);
         $response->assertStatus(200);
 
         $updatedApp = $response->json('data');
-        $response = $this->actingAs($user)->getJson("/api/apps/{$updatedApp['slug']}");
+        $response = $this->actingAs($user)->getJson("/apps/{$updatedApp['slug']}");
         $response->assertStatus(200);
 
         $data = $response->json('data');
@@ -124,7 +124,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
         $appName = fake()->unique()->name;
 
         $faker = Factory::create();
-        $response = $this->actingAs($user)->postJson('/api/apps', [
+        $response = $this->actingAs($user)->postJson('/apps', [
             'name' => $appName,
             'description' => $faker->text,
         ]);
@@ -132,7 +132,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
 
         $response->assertStatus(200);
 
-        $response = $this->actingAs($user)->postJson("/api/apps/{$createdApp['slug']}/api-keys");
+        $response = $this->actingAs($user)->postJson("/apps/{$createdApp['slug']}/api-keys");
         $response->assertStatus(201);
     }
 
@@ -143,7 +143,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
         $appName = fake()->unique()->name;
 
         $faker = Factory::create();
-        $response = $this->actingAs($user)->postJson('/api/apps', [
+        $response = $this->actingAs($user)->postJson('/apps', [
             'name' => $appName,
             'description' => $faker->text,
         ]);
@@ -151,10 +151,10 @@ class TestCase extends \Orchestra\Testbench\TestCase
 
         $response->assertStatus(200);
 
-        $response = $this->actingAs($user)->postJson("/api/apps/{$createdApp['slug']}/api-keys");
+        $response = $this->actingAs($user)->postJson("/apps/{$createdApp['slug']}/api-keys");
         $response->assertStatus(201);
 
-        $response = $this->actingAs($user)->getJson("/api/apps/{$createdApp['slug']}/api-keys");
+        $response = $this->actingAs($user)->getJson("/apps/{$createdApp['slug']}/api-keys");
         $response->assertStatus(200);
     }
 
@@ -165,7 +165,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
         $appName = fake()->unique()->name;
 
         $faker = Factory::create();
-        $response = $this->actingAs($user)->postJson('/api/apps', [
+        $response = $this->actingAs($user)->postJson('/apps', [
             'name' => $appName,
             'description' => $faker->text,
         ]);
@@ -173,11 +173,11 @@ class TestCase extends \Orchestra\Testbench\TestCase
 
         $response->assertStatus(200);
 
-        $response = $this->actingAs($user)->postJson("/api/apps/{$createdApp['slug']}/api-keys");
+        $response = $this->actingAs($user)->postJson("/apps/{$createdApp['slug']}/api-keys");
         $response->assertStatus(201);
 
         $key = $response->json();
-        $response = $this->actingAs($user)->deleteJson("/api/apps/{$createdApp['slug']}/api-keys/{$key['id']}");
+        $response = $this->actingAs($user)->deleteJson("/apps/{$createdApp['slug']}/api-keys/{$key['id']}");
         $response->assertStatus(204);
     }
 
@@ -188,7 +188,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
         $appName = fake()->unique()->name;
 
         $faker = Factory::create();
-        $response = $this->actingAs($user)->postJson('/api/apps', [
+        $response = $this->actingAs($user)->postJson('/apps', [
             'name' => $appName,
             'description' => $faker->text,
         ]);
@@ -196,7 +196,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
 
         $createdApp = $response->json('data');
 
-        $response = $this->actingAs($user)->delete("/api/apps/{$createdApp['slug']}");
+        $response = $this->actingAs($user)->delete("/apps/{$createdApp['slug']}");
         $response->assertStatus(204);
     }
 

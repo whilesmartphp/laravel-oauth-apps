@@ -51,14 +51,14 @@ the migrations, routes, controllers separately or all at once.
 Run the command below to publish only the routes.
 
 ```bash
-$ php artisan vendor:publish --tag=app-authentication-routes
+$ php artisan vendor:publish --tag=laravel-app-authentication-routes
 $ php artisan migrate
 ```
 
-The routes will be available at `routes/app-authentication.php`. You should `require` this file in your `api.php` file.
+The routes will be available at `routes/laravel-app-authentication.php`. You should `require` this file in your `api.php` file.
 
 ```php
-require 'app-authentication.php';
+require 'laravel-app-authentication.php';
 ```
 
 #### 2.2 Publishing only the migrations
@@ -66,7 +66,7 @@ require 'app-authentication.php';
 +If you would like to make changes to the migration files, run the command below to publish only the migrations.
 
 ```bash
-$ php artisan vendor:publish --tag=app-authentication-migrations
+$ php artisan vendor:publish --tag=laravel-app-authentication-migrations
 $ php artisan migrate
 ```
 
@@ -77,7 +77,7 @@ The migrations will be available in the `database/migrations` folder.
 To publish the controllers, run the command below
 
 ```bash
-$ php artisan vendor:publish --tag=app-authentication-controllers
+$ php artisan vendor:publish --tag=laravel-app-authentication-controllers
 $ php artisan migrate
 ```
 
@@ -91,7 +91,7 @@ Finally, change the namespace in the published controllers to your namespace.
 To publish the migrations, routes and controllers, you can run the command below
 
 ```bash
-$ php artisan vendor:publish --tag=app-authentication
+$ php artisan vendor:publish --tag=laravel-app-authentication
 $ php artisan migrate
 ```
 
@@ -104,7 +104,7 @@ $ php artisan migrate
 
 ## Configuration
 
-* The configuration file `config/app-authentication.php` allows you to customize various settings
+* The configuration file `config/laravel-app-authentication.php` allows you to customize various settings
 
 ## Usage
 
@@ -113,9 +113,9 @@ $ php artisan migrate
 After installation, the following API endpoints will be available:
 
 * **Application Management:**
-    * `POST /api/apps`: Create a new application.
-    * `GET /api/apps`: List user's applications.
-    * `DELETE /api/apps/{app}`: Delete an application.
+    * `POST /apps`: Create a new application.
+    * `GET /apps`: List user's applications.
+    * `DELETE /apps/{app}`: Delete an application.
 * **API Key Management:**
     * `POST /api/apps/{app}/api-keys`: Generate a new API key.
     * `DELETE /api/apps/{app}/api-keys/{apiKey}`: Revoke an API key.
