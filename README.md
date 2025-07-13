@@ -86,7 +86,22 @@ Finally, change the namespace in the published controllers to your namespace.
 
 #### Note: Publishing the controllers will also publish the routes. See section 2.1
 
-#### 2.4 Publish everything
+#### 2.4 Publish  the config
+
+To publish the config, run the command below
+
+```bash
+php artisan vendor:publish --tag=laravel-app-authentication-config
+```
+
+The config file will be available in the `config/laravel-app-authentication.php`.
+The config file has the folowing variables:
+
+- `register_routes`: Default `true`. Auto registers the routes. If you do not want to auto-register the routes, set the
+  value to `false
+- `route_prefix`: Default `api`. Defines the prefix for the auto-registered routes.
+
+#### 2.5 Publish everything
 
 To publish the migrations, routes and controllers, you can run the command below
 
@@ -113,9 +128,9 @@ $ php artisan migrate
 After installation, the following API endpoints will be available:
 
 * **Application Management:**
-    * `POST /apps`: Create a new application.
-    * `GET /apps`: List user's applications.
-    * `DELETE /apps/{app}`: Delete an application.
+    * `POST /api/apps`: Create a new application.
+    * `GET /api/apps`: List user's applications.
+    * `DELETE /api/apps/{app}`: Delete an application.
 * **API Key Management:**
     * `POST /api/apps/{app}/api-keys`: Generate a new API key.
     * `DELETE /api/apps/{app}/api-keys/{apiKey}`: Revoke an API key.

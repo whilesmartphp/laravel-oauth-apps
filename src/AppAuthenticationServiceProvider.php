@@ -2,6 +2,7 @@
 
 namespace Whilesmart\LaravelAppAuthentication;
 
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
 class AppAuthenticationServiceProvider extends ServiceProvider
@@ -25,8 +26,16 @@ class AppAuthenticationServiceProvider extends ServiceProvider
     {
 
         if (config('laravel-app-authentication.register_routes', true)) {
-            $this->loadRoutesFrom(__DIR__.'/../routes/laravel-app-authentication.php');
+            $prefix = config('laravel-app-authentication.route_prefix', 'api');
+            if ($prefix) {
+                Route::prefix($prefix)->group(function () {
+                    $this->loadRoutesFrom(__DIR__.'/../routes/laravel-app-authentication.php');
+                });
+            } else {
+                $this->loadRoutesFrom(__DIR__.'/../routes/laravel-app-authentication.php');
+            }
         }
+
         $this->publishes([
             __DIR__.'/../routes/laravel-app-authentication.php' => base_path('routes/laravel-app-authentication.php'),
         ], ['laravel-app-authentication', 'laravel-app-authentication-routes', 'laravel-app-authentication-controllers']);
@@ -49,6 +58,6 @@ class AppAuthenticationServiceProvider extends ServiceProvider
         // Publish config
         $this->publishes([
             __DIR__.'/../config/laravel-app-authentication.php' => config_path('laravel-app-authentication.php'),
-        ], ['laravel-app-authentication', 'laravel-app-authentication-controllers']);
+        ], ['laravel-app-authentication', 'laravel-app-authentication-config']);
     }
 }
