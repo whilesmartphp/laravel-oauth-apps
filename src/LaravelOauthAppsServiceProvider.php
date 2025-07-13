@@ -35,6 +35,7 @@ class LaravelOauthAppsServiceProvider extends ServiceProvider
                 $this->loadRoutesFrom(__DIR__.'/../routes/laravel-oauth-apps.php');
             }
         }
+
         $this->publishes([
             __DIR__.'/../routes/laravel-oauth-apps.php' => base_path('routes/laravel-oauth-apps.php'),
         ], ['laravel-oauth-apps', 'laravel-oauth-apps-routes', 'laravel-oauth-apps-controllers']);
@@ -57,6 +58,6 @@ class LaravelOauthAppsServiceProvider extends ServiceProvider
         // Publish config
         $this->publishes([
             __DIR__.'/../config/laravel-oauth-apps.php' => config_path('laravel-oauth-apps.php'),
-        ], ['laravel-oauth-apps', 'laravel-oauth-apps-controllers']);
+        ], ['laravel-oauth-apps', 'laravel-oauth-apps-config']);
     }
 }

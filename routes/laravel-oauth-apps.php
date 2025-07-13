@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Whilesmart\LaravelAppAuthentication\Http\Controllers\AppController;
+use Whilesmart\LaravelOauthApps\Http\Controllers\AppController;
 
 /*
 |--------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 <?php
 
-namespace Whilesmart\LaravelAppAuthentication\Exceptions;
+namespace Whilesmart\LaravelOauthApps\Exceptions;
 
 use Exception;
 

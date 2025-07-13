@@ -1,13 +1,13 @@
 <?php
 
-namespace Whilesmart\LaravelAppAuthentication\Http\Middleware;
+namespace Whilesmart\LaravelOauthApps\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Whilesmart\LaravelAppAuthentication\Exceptions\InvalidAppCredentialsException;
-use Whilesmart\LaravelAppAuthentication\Exceptions\NoClientIdException;
-use Whilesmart\LaravelAppAuthentication\Exceptions\NoSecretIdException;
-use Whilesmart\LaravelAppAuthentication\Models\App;
+use Whilesmart\LaravelOauthApps\Exceptions\InvalidAppCredentialsException;
+use Whilesmart\LaravelOauthApps\Exceptions\NoClientIdException;
+use Whilesmart\LaravelOauthApps\Exceptions\NoSecretIdException;
+use Whilesmart\LaravelOauthApps\Models\App;
 
 class EnforceHeaderAuth
 {

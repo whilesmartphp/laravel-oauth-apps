@@ -1,5 +1,5 @@
 {
-  "name": "whilesmart/laravel-app-authentication",
+  "name": "whilesmart/laravel-oath-apps",
   "description": "Package for managing app authentication across our projects",
   "license": "MIT",
   "authors": [
@@ -10,7 +10,7 @@
   ],
   "autoload": {
     "psr-4": {
-      "Whilesmart\\LaravelAppAuthentication\\": "src"
+      "Whilesmart\\LaravelOauthApps\\": "src"
     }
   },
   "require": {
@@ -21,7 +21,7 @@
   "extra": {
     "laravel": {
       "providers": [
-        "Whilesmart\\LaravelAppAuthentication\\AppAuthenticationServiceProvider"
+        "Whilesmart\\LaravelOauthApps\\LaravelOauthAppsServiceProvider"
       ]
     }
   },

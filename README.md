@@ -1,4 +1,4 @@
-# WhileSmart Laravel App Authentication Package
+# WhileSmart Laravel Oauth Apps Package
 
 A Laravel package providing out-of-the-box authentication for applications and API key management.
 
@@ -23,7 +23,7 @@ A Laravel package providing out-of-the-box authentication for applications and A
 ### 1. Require the package
 
    ```bash
-   $ composer require whilesmart/laravel-app-authentication
+   $ composer require whilesmart/laravel-oauth-apps
    ```
 
 This package uses Laravel/passport. Please run the command below if you do not yet have passport configured
@@ -31,10 +31,12 @@ This package uses Laravel/passport. Please run the command below if you do not y
 ```bash
 $ php artisan install:api --passport
 ```
-Additionally, this command will ask if you would like to use UUIDs as the primary key value of the Passport Client model instead of auto-incrementing integer
+
+Additionally, this command will ask if you would like to use UUIDs as the primary key value of the Passport Client model
+instead of auto-incrementing integer
 . Select UUID
 
-Or simply run 
+Or simply run
 
 ```bash
 $ php artisan passport:install --uuids
@@ -51,14 +53,17 @@ the migrations, routes, controllers separately or all at once.
 Run the command below to publish only the routes.
 
 ```bash
-$ php artisan vendor:publish --tag=laravel-app-authentication-routes
+$ php artisan vendor:publish --tag=laravel-oauth-apps-routes
 $ php artisan migrate
 ```
 
-The routes will be available at `routes/laravel-app-authentication.php`. You should `require` this file in your `api.php` file.
+ The routes will be available at `routes/laravel-oauth-apps.php`. If `register_routes` in `config/laravel-oauth-apps.php`
+is `true` (default), the routes will be automatically registered with the defined `route_prefix` (default `api`). If you
+wish to disable auto-registration and manually control the route definition, set `register_routes` to `false` in your
+config and then `require 'laravel-oauth-apps.php';` in your `api.php` file.
 
 ```php
-require 'laravel-app-authentication.php';
+require 'laravel-oauth-apps.php';
 ```
 
 #### 2.2 Publishing only the migrations
@@ -66,7 +71,7 @@ require 'laravel-app-authentication.php';
 +If you would like to make changes to the migration files, run the command below to publish only the migrations.
 
 ```bash
-$ php artisan vendor:publish --tag=laravel-app-authentication-migrations
+$ php artisan vendor:publish --tag=laravel-oauth-apps-migrations
 $ php artisan migrate
 ```
 
@@ -77,7 +82,7 @@ The migrations will be available in the `database/migrations` folder.
 To publish the controllers, run the command below
 
 ```bash
-$ php artisan vendor:publish --tag=laravel-app-authentication-controllers
+$ php artisan vendor:publish --tag=laravel-oauth-apps-controllers
 $ php artisan migrate
 ```
 
@@ -106,7 +111,7 @@ The config file has the folowing variables:
 To publish the migrations, routes and controllers, you can run the command below
 
 ```bash
-$ php artisan vendor:publish --tag=laravel-app-authentication
+$ php artisan vendor:publish --tag=laravel-oauth-apps
 $ php artisan migrate
 ```
 
@@ -119,7 +124,7 @@ $ php artisan migrate
 
 ## Configuration
 
-* The configuration file `config/laravel-app-authentication.php` allows you to customize various settings
+* The configuration file `config/laravel-oauth-apps.php` allows you to customize various settings
 
 ## Usage
 
@@ -132,28 +137,30 @@ After installation, the following API endpoints will be available:
     * `GET /api/apps`: List user's applications.
     * `DELETE /api/apps/{app}`: Delete an application.
 * **API Key Management:**
-    * `POST /api/apps/{app}/api-keys`: Generate a new API key.
-    * `DELETE /api/apps/{app}/api-keys/{apiKey}`: Revoke an API key.
+    * `POST /apps/{app}/api-keys`: Generate a new API key.
+    * `DELETE /apps/{app}/api-keys/{apiKey}`: Revoke an API key.
 
 ### Example API Key Generation Request
 
-POST /api/apps/{app}/api-keys
+POST /apps/{app}/api-keys
 
 (Where `{app}` is the id of the app)
 
 ### API Key Authentication
 
-Add the `Whilesmart\LaravelAppAuthentication\Http\Middleware\EnforceHeaderAuth` middleware to your `Kernel.php` if
-you are using Laravel <11 
+Add the `Whilesmart\LaravelOauthApps\Http\Middleware\EnforceHeaderAuth` middleware to your `Kernel.php` if
+you are using Laravel <11
+
 ```php
     protected $routeMiddleware = [
         ...,
-        'AuthenticateApiKey' => \Whilesmart\LaravelAppAuthentication\Http\Middleware\EnforceHeaderAuth::class,
+        'AuthenticateApiKey' => \Whilesmart\LaravelOauthApps\Http\Middleware\EnforceHeaderAuth::class,
     ];
 
 ```
 
 or `bootstrap/app.php` if you are using Laravel 11+
+
 ```php
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -165,7 +172,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         ...
-        $middleware->alias(['auth.api.key'=> \Whilesmart\LaravelAppAuthentication\Http\Middleware\EnforceHeaderAuth::class]);
+        $middleware->alias(['auth.api.key'=> \Whilesmart\LaravelOauthApps\Http\Middleware\EnforceHeaderAuth::class]);
 
     })
     ->withExceptions(function (Exceptions $exceptions) {
@@ -182,7 +189,8 @@ Route::middleware('auth.api.key')->group(function () {
 });
 ```
 
-To use the API, provide the id generated for the application in the **X-client-id** header, and the secret in the **X-secret-id**
+To use the API, provide the id generated for the application in the **X-client-id** header, and the secret in the *
+*X-secret-id**
 
 Please feel free to contribute by submitting pull requests or reporting issues.
 

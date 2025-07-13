@@ -1,6 +1,6 @@
 <?php
 
-namespace Whilesmart\LaravelAppAuthentication\Http\Controllers;
+namespace Whilesmart\LaravelOauthApps\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -9,9 +9,9 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Laravel\Passport\ClientRepository;
-use Whilesmart\LaravelAppAuthentication\Http\Responses\Helper;
-use Whilesmart\LaravelAppAuthentication\Models\App;
-use Whilesmart\LaravelAppAuthentication\Transformers\AppTransformer;
+use Whilesmart\LaravelOauthApps\Http\Responses\Helper;
+use Whilesmart\LaravelOauthApps\Models\App;
+use Whilesmart\LaravelOauthApps\Transformers\AppTransformer;
 
 class AppController extends Controller
 {
