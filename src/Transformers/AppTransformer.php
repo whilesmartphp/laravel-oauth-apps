@@ -1,6 +1,6 @@
 <?php
 
-namespace Whilesmart\LaravelAppAuthentication\Transformers;
+namespace Whilesmart\LaravelOauthApps\Transformers;
 
 use Laravel\Passport\Client as BaseClient;
 use League\Fractal\TransformerAbstract;

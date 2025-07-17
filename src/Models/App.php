@@ -1,6 +1,6 @@
 <?php
 
-namespace Whilesmart\LaravelAppAuthentication\Models;
+namespace Whilesmart\LaravelOauthApps\Models;
 
 use Cviebrock\EloquentSluggable\Sluggable;
 use Laravel\Passport\Client as BaseClient;

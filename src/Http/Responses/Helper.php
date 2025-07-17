@@ -1,6 +1,6 @@
 <?php
 
-namespace Whilesmart\LaravelAppAuthentication\Http\Responses;
+namespace Whilesmart\LaravelOauthApps\Http\Responses;
 
 use Closure;
 use Illuminate\Contracts\Pagination\Paginator;
