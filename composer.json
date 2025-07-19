@@ -1,5 +1,5 @@
 {
-  "name": "whilesmart/laravel-oath-apps",
+  "name": "whilesmart/laravel-oauth-apps",
   "description": "Package for managing app authentication across our projects",
   "license": "MIT",
   "authors": [
