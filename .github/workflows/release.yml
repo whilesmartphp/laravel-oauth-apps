@@ -188,7 +188,6 @@ jobs:
           prerelease: false
 
       - name: Create Pull Request (for release branch)
-        if: false
         uses: actions/github-script@v7
         with:
           script: |
