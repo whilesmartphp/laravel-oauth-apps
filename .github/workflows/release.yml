@@ -1,0 +1,258 @@
+name: Create Release
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Extract version from composer.json
+        id: get_version
+        run: |
+          if [ ! -f "composer.json" ]; then
+            echo "❌ composer.json not found!"
+            exit 1
+          fi
+          
+          VERSION=$(jq -r '.version // empty' composer.json)
+          
+          if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
+            echo "❌ No version found in composer.json!"
+            echo "Please add a 'version' field to your composer.json file."
+            exit 1
+          fi
+          
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "✅ Found version: $VERSION"
+
+      - name: Extract release notes from CHANGELOG.md
+        id: get_changelog
+        run: |
+          if [ ! -f "CHANGELOG.md" ]; then
+            echo "❌ CHANGELOG.md not found!"
+            exit 1
+          fi
+          
+          # Extract the latest version section from CHANGELOG.md
+          # This assumes the format: ## [version] - date
+          VERSION="${{ steps.get_version.outputs.version }}"
+          
+          # Create a temporary file to store the release notes
+          TEMP_FILE=$(mktemp)
+          
+          # Find the section for this version and extract content until the next version or end of file
+          awk -v version="$VERSION" '
+          BEGIN { found=0; printing=0 }
+          /^## \[/ {
+            if (found && printing) exit
+            if ($0 ~ "\\[" version "\\]") {
+              found=1
+              printing=1
+              next
+            }
+          }
+          found && printing && /^## \[/ { exit }
+          found && printing { print }
+          ' CHANGELOG.md > "$TEMP_FILE"
+          
+          # Check if we found any content
+          if [ ! -s "$TEMP_FILE" ]; then
+            echo "❌ No changelog entry found for version $VERSION!"
+            echo "Please add a changelog entry in the format: ## [$VERSION] - YYYY-MM-DD"
+            rm "$TEMP_FILE"
+            exit 1
+          fi
+          
+          # Read the content and set as output (handling multiline)
+          {
+            echo 'release_notes<<EOF'
+            cat "$TEMP_FILE"
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
+          
+          rm "$TEMP_FILE"
+          echo "✅ Found changelog entry for version $VERSION"
+
+      - name: Check if tag already exists
+        id: check_tag
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          if git rev-parse "v$VERSION" >/dev/null 2>&1; then
+            echo "❌ Tag v$VERSION already exists!"
+            echo "Please update the version in composer.json before creating a release."
+            exit 1
+          fi
+          echo "✅ Tag v$VERSION does not exist, proceeding..."
+
+      - name: Create release branch
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          BRANCH_NAME="release-$VERSION"
+          
+          # Check if branch already exists
+          if git show-ref --verify --quiet refs/heads/$BRANCH_NAME; then
+            echo "❌ Branch $BRANCH_NAME already exists!"
+            exit 1
+          fi
+          
+          git checkout -b $BRANCH_NAME
+          echo "✅ Created release branch: $BRANCH_NAME"
+
+      - name: Verify changelog format and update if needed
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          CURRENT_DATE=$(date '+%Y-%m-%d')
+          
+          # Check if the changelog entry has the current date
+          if ! grep -q "## \[$VERSION\] - $CURRENT_DATE" CHANGELOG.md; then
+            echo "⚠️ Updating changelog date to today's date..."
+          
+            # Update the date in the changelog
+            sed -i "s/## \[$VERSION\] - [0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}/## [$VERSION] - $CURRENT_DATE/" CHANGELOG.md
+          
+            # Commit the date update
+            git add CHANGELOG.md
+            git commit -m "Update changelog date for v$VERSION" || echo "No changes to commit"
+          else
+            echo "✅ Changelog date is current"
+          fi
+
+      - name: Create and push tag
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          git tag -a "v$VERSION" -m "Release $VERSION"
+          echo "✅ Created tag v$VERSION"
+
+      - name: Push changes and tags
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          
+          if [ "${{ true }}" = "true" ]; then
+            git push origin "release-$VERSION"
+            echo "✅ Pushed release branch"
+          else
+            git push origin ${{ github.ref_name }}
+            echo "✅ Pushed changes to main branch"
+          fi
+          
+          git push origin "v$VERSION"
+          echo "✅ Pushed tag"
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.get_version.outputs.version }}
+          release_name: Release ${{ steps.get_version.outputs.version }}
+          body: |
+            ## Release Notes
+            
+            ${{ steps.get_changelog.outputs.release_notes }}
+            
+            ---
+            
+            ## Installation
+            
+            ```bash
+            composer require your-package-name
+            ```
+            
+            ## Documentation
+            
+            See the [README](README.md) for usage instructions.
+            
+            ## Full Changelog
+            
+            View the complete version history in [CHANGELOG.md](CHANGELOG.md).
+          draft: true
+          prerelease: false
+
+      - name: Create Pull Request (for release branch)
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const version = '${{ steps.get_version.outputs.version }}';
+            const releaseNotes = `${{ steps.get_changelog.outputs.release_notes }}`;
+            
+            const { data: pullRequest } = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Release v${version}`,
+              head: `release-${version}`,
+              base: '${{ github.event.repository.default_branch }}',
+              body: `## Release v${version}
+            
+              This PR contains the release changes for version ${version}.
+            
+              ### 🚀 What's New:
+              ${releaseNotes}
+            
+              ### 📝 Changes Made:
+              - ✅ Updated changelog date (if needed)
+              - ✅ Created release tag v${version}
+              - ✅ Published GitHub release
+            
+              ### ⚡ Next Steps:
+              - Review the changes
+              - Merge this PR to complete the release process
+              - The release is already published and tagged
+            
+              ---
+            
+              **Note:** The GitHub release has already been created. This PR is for housekeeping and to merge any changelog date updates back to the main branch.`
+            });
+            
+            console.log(`Created PR #${pullRequest.number}`);
+            
+            // Add labels to the PR
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pullRequest.number,
+              labels: ['release', 'auto-generated']
+            });
+
+      - name: Summary
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          echo "## 🎉 Release Creation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ Successfully Created Release v$VERSION" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**What was done:**" >> $GITHUB_STEP_SUMMARY
+          echo "- 📖 Extracted version from \`composer.json\`" >> $GITHUB_STEP_SUMMARY
+          echo "- 📝 Extracted release notes from \`CHANGELOG.md\`" >> $GITHUB_STEP_SUMMARY
+          echo "- 🏷️ Created and pushed git tag \`v$VERSION\`" >> $GITHUB_STEP_SUMMARY
+          echo "- 🚀 Created **DRAFT** GitHub release" >> $GITHUB_STEP_SUMMARY
+          echo "- 🌿 Created release branch \`release-$VERSION\`" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔄 Created pull request for release branch" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔗 Quick Links" >> $GITHUB_STEP_SUMMARY
+          echo "- [📋 View Release](https://github.com/${{ github.repository }}/releases/tag/v$VERSION)" >> $GITHUB_STEP_SUMMARY
+          echo "- [📝 View Changelog](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)" >> $GITHUB_STEP_SUMMARY
+          echo "- [🔄 View Pull Request](https://github.com/${{ github.repository }}/pulls)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Release Notes Preview" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.get_changelog.outputs.release_notes }}" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
