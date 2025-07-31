@@ -24,3 +24,4 @@ Route::delete('/apps/{app}', [AppController::class, 'destroy']);
 Route::get('/apps/{app}/api-keys', [AppController::class, 'getApiKeys']);
 Route::post('/apps/{app}/api-keys', [AppController::class, 'generateApiKeys']);
 Route::delete('/apps/{app}/api-keys/{apiKey}', [AppController::class, 'deleteApiKey']);
+Route::post('/apps/{app}/regenerate-secret', [AppController::class, 'regenerateSecret']);
