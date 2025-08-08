@@ -57,13 +57,13 @@ $ php artisan vendor:publish --tag=laravel-oauth-apps-routes
 $ php artisan migrate
 ```
 
- The routes will be available at `routes/laravel-oauth-apps.php`. If `register_routes` in `config/laravel-oauth-apps.php`
+The routes will be available at `routes/oauth-apps.php`. If `register_routes` in `config/oauth-apps.php`
 is `true` (default), the routes will be automatically registered with the defined `route_prefix` (default `api`). If you
 wish to disable auto-registration and manually control the route definition, set `register_routes` to `false` in your
-config and then `require 'laravel-oauth-apps.php';` in your `api.php` file.
+config and then `require 'oauth-apps.php';` in your `api.php` file.
 
 ```php
-require 'laravel-oauth-apps.php';
+require 'oauth-apps.php';
 ```
 
 #### 2.2 Publishing only the migrations
@@ -99,7 +99,7 @@ To publish the config, run the command below
 php artisan vendor:publish --tag=laravel-app-authentication-config
 ```
 
-The config file will be available in the `config/laravel-app-authentication.php`.
+The config file will be available in the `config/oauth-apps.php`.
 The config file has the folowing variables:
 
 - `register_routes`: Default `true`. Auto registers the routes. If you do not want to auto-register the routes, set the
@@ -124,7 +124,7 @@ $ php artisan migrate
 
 ## Configuration
 
-* The configuration file `config/laravel-oauth-apps.php` allows you to customize various settings
+* The configuration file `config/oauth-apps.php` allows you to customize various settings
 
 ## Usage
 
@@ -139,6 +139,7 @@ After installation, the following API endpoints will be available:
 * **API Key Management:**
     * `POST /apps/{app}/api-keys`: Generate a new API key.
     * `DELETE /apps/{app}/api-keys/{apiKey}`: Revoke an API key.
+    * `POST /apps/{app}/regenerate-secret`: Regenerate app secret.
 
 ### Example API Key Generation Request
 
@@ -186,11 +187,16 @@ To protect your API routes, use the `auth.api.key` middleware. Applications auth
 // routes/api.php
 Route::middleware('auth.api.key')->group(function () {
     // Your protected routes here
+      Route::get('/test-auth-app', function (Request $request) {
+            return response()->json($request->app);
+        });
 });
 ```
 
-To use the API, provide the id generated for the application in the **X-client-id** header, and the secret in the *
-*X-secret-id**
+To use the API, provide the id generated for the application in the **X-Client-ID** header, and the secret in the *
+*X-Client-Secret**
+
+Use ```$request->app``` to get the app object in your controllers.
 
 Please feel free to contribute by submitting pull requests or reporting issues.
 

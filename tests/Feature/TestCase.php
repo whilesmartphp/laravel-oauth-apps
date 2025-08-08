@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Laravel\Passport\Passport;
 use Orchestra\Testbench\Attributes\WithMigration;
+use Whilesmart\LaravelOauthApps\Models\App;
 use Workbench\App\Models\User;
 
 use function Orchestra\Testbench\workbench_path;
@@ -61,7 +62,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
         $response = $this->actingAs($user)->getJson('/api/apps');
         $response->assertStatus(200);
 
-        $data = $response->json('data');
+        $data = $response->json('data.data');
         $this->assertEquals($appName, $data[0]['name']);
     }
 
@@ -76,7 +77,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
             'name' => $appName,
             'description' => $faker->text,
         ]);
-        $createdApp = $response->json('data');
+        $createdApp = $response->json('data.client');
 
         $response->assertStatus(200);
 
@@ -98,7 +99,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
             'name' => $appName,
             'description' => $faker->text,
         ]);
-        $createdApp = $response->json('data');
+        $createdApp = $response->json('data.client');
 
         $response->assertStatus(200);
 
@@ -117,6 +118,28 @@ class TestCase extends \Orchestra\Testbench\TestCase
         $this->assertEquals($newDescription, $data['description']);
     }
 
+    public function test_api_user_can_regenerate_an_app_secret()
+    {
+        $user = $this->create_test_user();
+
+        $appName = fake()->unique()->name;
+
+        $faker = Factory::create();
+        $response = $this->actingAs($user)->postJson('/api/apps', [
+            'name' => $appName,
+            'description' => $faker->text,
+        ]);
+        $createdApp = $response->json('data.client');
+        $oldSecretHash = App::whereSlug($createdApp['slug'])->first()->secret;
+
+        $response->assertStatus(200);
+
+        $response = $this->actingAs($user)->postJson("/api/apps/{$createdApp['slug']}/regenerate-secret");
+        $response->assertStatus(200);
+        $newSecretHash = App::whereSlug($createdApp['slug'])->first()->secret;
+        $this->assertNotEquals($oldSecretHash, $newSecretHash);
+    }
+
     public function test_api_user_can_generate_keys_for_an_app()
     {
         $user = $this->create_test_user();
@@ -128,7 +151,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
             'name' => $appName,
             'description' => $faker->text,
         ]);
-        $createdApp = $response->json('data');
+        $createdApp = $response->json('data.client');
 
         $response->assertStatus(200);
 
@@ -147,7 +170,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
             'name' => $appName,
             'description' => $faker->text,
         ]);
-        $createdApp = $response->json('data');
+        $createdApp = $response->json('data.client');
 
         $response->assertStatus(200);
 
@@ -169,14 +192,15 @@ class TestCase extends \Orchestra\Testbench\TestCase
             'name' => $appName,
             'description' => $faker->text,
         ]);
-        $createdApp = $response->json('data');
+        $createdApp = $response->json('data.client');
 
         $response->assertStatus(200);
 
         $response = $this->actingAs($user)->postJson("/api/apps/{$createdApp['slug']}/api-keys");
         $response->assertStatus(201);
 
-        $key = $response->json();
+        $key = $response->json('data');
+
         $response = $this->actingAs($user)->deleteJson("/api/apps/{$createdApp['slug']}/api-keys/{$key['id']}");
         $response->assertStatus(204);
     }
@@ -194,7 +218,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
         ]);
         $response->assertStatus(200);
 
-        $createdApp = $response->json('data');
+        $createdApp = $response->json('data.client');
 
         $response = $this->actingAs($user)->delete("/api/apps/{$createdApp['slug']}");
         $response->assertStatus(204);
