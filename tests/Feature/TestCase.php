@@ -31,6 +31,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
         ]);
 
         $response->assertStatus(200);
+        $this->assertEquals(__('oauth-apps.operation_successful'), $response->json('message'));
 
     }
 
@@ -64,6 +65,8 @@ class TestCase extends \Orchestra\Testbench\TestCase
 
         $data = $response->json('data.data');
         $this->assertEquals($appName, $data[0]['name']);
+        $this->assertEquals(__('oauth-apps.operation_successful'), $response->json('message'));
+
     }
 
     public function test_api_user_can_get_a_single_app()
@@ -86,6 +89,8 @@ class TestCase extends \Orchestra\Testbench\TestCase
 
         $data = $response->json('data');
         $this->assertEquals($appName, $data['name']);
+        $this->assertEquals(__('oauth-apps.operation_successful'), $response->json('message'));
+
     }
 
     public function test_api_user_can_update_an_app()
@@ -116,6 +121,8 @@ class TestCase extends \Orchestra\Testbench\TestCase
         $data = $response->json('data');
         $this->assertEquals($newName, $data['name']);
         $this->assertEquals($newDescription, $data['description']);
+        $this->assertEquals(__('oauth-apps.operation_successful'), $response->json('message'));
+
     }
 
     public function test_api_user_can_regenerate_an_app_secret()
@@ -138,6 +145,8 @@ class TestCase extends \Orchestra\Testbench\TestCase
         $response->assertStatus(200);
         $newSecretHash = App::whereSlug($createdApp['slug'])->first()->secret;
         $this->assertNotEquals($oldSecretHash, $newSecretHash);
+        $this->assertEquals(__('oauth-apps.secret_regenerated'), $response->json('message'));
+
     }
 
     public function test_api_user_can_generate_keys_for_an_app()
@@ -157,6 +166,9 @@ class TestCase extends \Orchestra\Testbench\TestCase
 
         $response = $this->actingAs($user)->postJson("/api/apps/{$createdApp['slug']}/api-keys");
         $response->assertStatus(201);
+
+        $this->assertEquals(__('oauth-apps.operation_successful'), $response->json('message'));
+
     }
 
     public function test_api_user_can_get_generated_tokens_for_an_app()
@@ -179,6 +191,8 @@ class TestCase extends \Orchestra\Testbench\TestCase
 
         $response = $this->actingAs($user)->getJson("/api/apps/{$createdApp['slug']}/api-keys");
         $response->assertStatus(200);
+        $this->assertEquals(__('oauth-apps.operation_successful'), $response->json('message'));
+
     }
 
     public function test_api_user_can_delete_generated_tokens_for_an_app()
