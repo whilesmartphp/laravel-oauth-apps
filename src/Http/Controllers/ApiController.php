@@ -12,8 +12,12 @@ class ApiController extends BaseController
      *
      * @param  mixed  $data
      */
-    protected function success($data = null, string $message = 'Operation successful', int $statusCode = 200): JsonResponse
+    protected function success($data = null, ?string $message = null, int $statusCode = 200): JsonResponse
     {
+        if (is_null($message)) {
+            $message = __('oauth-apps.operation_successful');
+        }
+
         return response()->json([
             'success' => true,
             'message' => $message,
@@ -24,8 +28,12 @@ class ApiController extends BaseController
     /**
      * Return a failure response.
      */
-    protected function failure(string $message = 'Operation failed', int $statusCode = 400, array $errors = []): JsonResponse
+    protected function failure(?string $message = null, int $statusCode = 400, array $errors = []): JsonResponse
     {
+        if (is_null($message)) {
+            $message = __('oauth-apps.operation_failed');
+        }
+
         return response()->json([
             'success' => false,
             'message' => $message,

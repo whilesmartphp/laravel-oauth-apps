@@ -7,23 +7,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Laravel\Passport\ClientRepository;
+use Whilesmart\LaravelOauthApps\Interfaces\IAppControllerInterface;
 use Whilesmart\LaravelOauthApps\Models\App;
 
-class AppController extends ApiController
+class AppController extends ApiController implements IAppControllerInterface
 {
     private ClientRepository $clientRepository;
 
-    /**
-     * AppController constructor.
-     */
     public function __construct(ClientRepository $clientRepository)
     {
         $this->clientRepository = $clientRepository;
     }
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request): JsonResponse
     {
         $perPage = $request->query('perPage', 10);
@@ -34,9 +29,6 @@ class AppController extends ApiController
         return $this->success($apps);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request): JsonResponse
     {
         $request->validate([
@@ -63,11 +55,6 @@ class AppController extends ApiController
         return $this->success(['client' => $client->refresh(), 'secret' => $secret]);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  $app
-     */
     public function show(Request $request, string $slug): JsonResponse
     {
         $user = $request->user();
@@ -76,15 +63,12 @@ class AppController extends ApiController
         return $this->success($app);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $slug): JsonResponse
     {
         $user = $request->user();
         $app = App::where('user_id', $user->id)->whereSlug($slug)->firstOrFail();
         if ($app->revoked) {
-            $this->failure("App [$slug] has been revoked.", 403);
+            $this->failure(__('oauth-apps.revoked', ['slug' => $slug]), 403);
         }
 
         $request->validate([
@@ -103,16 +87,13 @@ class AppController extends ApiController
         return $this->success($app);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Request $request, string $slug): JsonResponse
     {
         $user = $request->user();
         $app = App::where('user_id', $user->id)->whereSlug($slug)->firstOrFail();
         $app->delete();
 
-        return $this->success(null, 'App has been deleted', 204);
+        return $this->success(null, __('oauth-apps.deleted'), 204);
     }
 
     public function generateApiKeys(Request $request, string $slug): JsonResponse
@@ -133,7 +114,7 @@ class AppController extends ApiController
         $newSecret = Str::random(40);
         $app->forceFill(['secret' => Hash::make($newSecret)])->save();
 
-        return $this->success($newSecret, 'Secret regenerated successfully');
+        return $this->success($newSecret, __('oauth-apps.secret_regenerated'));
     }
 
     public function getApiKeys(Request $request, string $slug): JsonResponse
@@ -151,6 +132,6 @@ class AppController extends ApiController
         $key = $app->tokens()->findOrFail($key);
         $key->delete();
 
-        return $this->success(null, 'API key has been deleted', 204);
+        return $this->success(null, __('oauth-apps.api_key_deleted'), 204);
     }
 }

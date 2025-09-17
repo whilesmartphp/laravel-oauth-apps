@@ -55,6 +55,14 @@ class LaravelOauthAppsServiceProvider extends ServiceProvider
             __DIR__.'/Http/Middleware' => app_path('Http/Middleware'),
         ], ['laravel-oauth-apps', 'laravel-oauth-apps-middleware']);
 
+        $this->publishes([
+            __DIR__.'/../resources/lang' => app_path('resources/lang'),
+        ], ['laravel-oauth-apps', 'laravel-oauth-apps-locals']);
+
+        $this->publishes([
+            __DIR__.'/Http/Interfaces' => app_path('Http/Interfaces'),
+        ], ['laravel-oauth-apps', 'laravel-oauth-apps-docs']);
+
         // Publish config
         $this->publishes([
             __DIR__.'/../config/oauth-apps.php' => config_path('oauth-apps.php'),

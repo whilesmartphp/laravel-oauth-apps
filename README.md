@@ -106,7 +106,23 @@ The config file has the folowing variables:
   value to `false
 - `route_prefix`: Default `api`. Defines the prefix for the auto-registered routes.
 
-#### 2.5 Publish everything
+#### 2.5 Publish Locals
+
+```bash
+php artisan vendor:publish --tag=laravel-oauth-apps-locals
+ ```
+
+The locales will be available in the `resources/lang/<locale>/oauth-apps.php`.
+
+#### 2.6 Publish OpenAPI Documentations
+
+```bash
+php artisan vendor:publish --tag=laravel-oauth-apps-docs
+```
+
+The documentation will be available in the `app/Http/Interfaces` directory.
+
+#### 2.7 Publish everything
 
 To publish the migrations, routes and controllers, you can run the command below
 
