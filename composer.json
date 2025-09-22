@@ -1,6 +1,7 @@
 {
   "name": "whilesmart/laravel-oauth-apps",
   "description": "Package for managing app authentication across our projects",
+  "package-version": "1.0.3",
   "license": "MIT",
   "authors": [
     {
