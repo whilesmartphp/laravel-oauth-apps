@@ -25,19 +25,19 @@ class LaravelOauthAppsServiceProvider extends ServiceProvider
     public function boot()
     {
 
-        if (config('laravel-oauth-apps.register_routes', true)) {
-            $prefix = config('laravel-oauth-apps.route_prefix', 'api');
+        if (config('oauth-apps.register_routes', true)) {
+            $prefix = config('oauth-apps.route_prefix', 'api');
             if ($prefix) {
                 Route::prefix($prefix)->group(function () {
-                    $this->loadRoutesFrom(__DIR__.'/../routes/laravel-oauth-apps.php');
+                    $this->loadRoutesFrom(__DIR__.'/../routes/oauth-apps.php');
                 });
             } else {
-                $this->loadRoutesFrom(__DIR__.'/../routes/laravel-oauth-apps.php');
+                $this->loadRoutesFrom(__DIR__.'/../routes/oauth-apps.php');
             }
         }
 
         $this->publishes([
-            __DIR__.'/../routes/laravel-oauth-apps.php' => base_path('routes/laravel-oauth-apps.php'),
+            __DIR__.'/../routes/oauth-apps.php' => base_path('routes/oauth-apps.php'),
         ], ['laravel-oauth-apps', 'laravel-oauth-apps-routes', 'laravel-oauth-apps-controllers']);
 
         $this->publishes([
@@ -55,9 +55,17 @@ class LaravelOauthAppsServiceProvider extends ServiceProvider
             __DIR__.'/Http/Middleware' => app_path('Http/Middleware'),
         ], ['laravel-oauth-apps', 'laravel-oauth-apps-middleware']);
 
+        $this->publishes([
+            __DIR__.'/../resources/lang' => app_path('resources/lang'),
+        ], ['laravel-oauth-apps', 'laravel-oauth-apps-locals']);
+
+        $this->publishes([
+            __DIR__.'/Http/Interfaces' => app_path('Http/Interfaces'),
+        ], ['laravel-oauth-apps', 'laravel-oauth-apps-docs']);
+
         // Publish config
         $this->publishes([
-            __DIR__.'/../config/laravel-oauth-apps.php' => config_path('laravel-oauth-apps.php'),
+            __DIR__.'/../config/oauth-apps.php' => config_path('oauth-apps.php'),
         ], ['laravel-oauth-apps', 'laravel-oauth-apps-config']);
     }
 }

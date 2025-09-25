@@ -2,63 +2,34 @@
 
 namespace Whilesmart\LaravelOauthApps\Http\Controllers;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Laravel\Passport\ClientRepository;
-use Whilesmart\LaravelOauthApps\Http\Responses\Helper;
+use Whilesmart\LaravelOauthApps\Interfaces\IAppControllerInterface;
 use Whilesmart\LaravelOauthApps\Models\App;
-use Whilesmart\LaravelOauthApps\Transformers\AppTransformer;
 
-class AppController extends Controller
+class AppController extends ApiController implements IAppControllerInterface
 {
-    use Helper;
-
     private ClientRepository $clientRepository;
 
-    /**
-     * AppController constructor.
-     */
     public function __construct(ClientRepository $clientRepository)
     {
         $this->clientRepository = $clientRepository;
     }
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return array|Response
-     */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
-        if (isset($request->with)) {
-            Validator::make(
-                [
-                    'with' => $request->with,
-                ],
-                array_filter([
-                    'with' => ['sometimes', 'array', Rule::in((new AppTransformer)->getAvailableIncludes())],
-                ])
-            )->validate();
-        }
         $perPage = $request->query('perPage', 10);
         $user = $request->user();
 
-        $paginator = App::where('user_id', $user->id)->paginate($perPage);
+        $apps = App::where('user_id', $user->id)->paginate($perPage);
 
-        return $this->paginator($paginator, new AppTransformer, $request->with ?? []);
+        return $this->success($apps);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     *
-     * @return Response
-     */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -67,6 +38,7 @@ class AppController extends Controller
 
         $user = $request->user();
         $client = $this->clientRepository->createAuthorizationCodeGrantClient($request->name, [], true, $user);
+        $secret = $client->plainSecret;
         $client->description = $request->description;
         $slug = Str::slug($request->name);
         $originalSlug = $slug;
@@ -80,46 +52,23 @@ class AppController extends Controller
 
         $client->save();
 
-        return $this->item($client->fresh(), new AppTransformer);
+        return $this->success(['client' => $client->refresh(), 'secret' => $secret]);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  $app
-     * @return Response
-     */
-    public function show(Request $request, string $slug)
+    public function show(Request $request, string $slug): JsonResponse
     {
-        if (isset($request->with)) {
-            Validator::make(
-                [
-                    'with' => $request->with,
-                ],
-                array_filter([
-                    'with' => ['sometimes', 'array', Rule::in((new AppTransformer)->getAvailableIncludes())],
-                ])
-            )->validate();
-        }
-        $app = App::with($request->with ?? [])->whereSlug($slug)->firstOrFail();
+        $user = $request->user();
+        $app = App::where('user_id', $user->id)->whereSlug($slug)->firstOrFail();
 
-        return $this->item(
-            $app,
-            new AppTransformer
-        );
+        return $this->success($app);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  int  $id
-     * @return Response
-     */
-    public function update(Request $request, string $slug)
+    public function update(Request $request, string $slug): JsonResponse
     {
-        $app = App::whereSlug($slug)->firstOrFail();
+        $user = $request->user();
+        $app = App::where('user_id', $user->id)->whereSlug($slug)->firstOrFail();
         if ($app->revoked) {
-            $this->errorNotFound();
+            $this->failure(__('oauth-apps.revoked', ['slug' => $slug]), 403);
         }
 
         $request->validate([
@@ -127,52 +76,62 @@ class AppController extends Controller
             'description' => 'sometimes|string',
         ]);
 
-        $app->forceFill([
+        $data = [
             'name' => $request->name,
             'description' => $request->description,
             'redirect' => '',
-        ])->save();
+        ];
 
-        return $this->item($app, new AppTransformer);
+        $app->forceFill($data)->save();
+
+        return $this->success($app);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return Response
-     */
-    public function destroy(Request $request, string $slug)
+    public function destroy(Request $request, string $slug): JsonResponse
     {
-        $app = App::whereSlug($slug)->firstOrFail();
+        $user = $request->user();
+        $app = App::where('user_id', $user->id)->whereSlug($slug)->firstOrFail();
         $app->delete();
 
-        return $this->noContent();
+        return $this->success(null, __('oauth-apps.deleted'), 204);
     }
 
-    public function generateApiKeys(Request $request, string $slug)
+    public function generateApiKeys(Request $request, string $slug): JsonResponse
     {
-        $app = App::whereSlug($slug)->firstOrFail();
+        $user = $request->user();
+        $app = App::where('user_id', $user->id)->whereSlug($slug)->firstOrFail();
 
-        return $this->created(null, $app->tokens()->create([
+        return $this->success($app->tokens()->create([
             'id' => Str::uuid(), // Ensure the id is set
             'revoked' => false,
-        ]));
+        ]), statusCode: 201);
     }
 
-    public function getApiKeys(Request $request, string $slug)
+    public function regenerateSecret(Request $request, string $slug): JsonResponse
     {
-        $app = App::whereSlug($slug)->firstOrFail();
+        $user = $request->user();
+        $app = App::where('user_id', $user->id)->whereSlug($slug)->firstOrFail();
+        $newSecret = Str::random(40);
+        $app->forceFill(['secret' => Hash::make($newSecret)])->save();
 
-        return $this->success(null, $app->tokens);
+        return $this->success($newSecret, __('oauth-apps.secret_regenerated'));
     }
 
-    public function deleteApiKey(Request $request, string $slug, $key)
+    public function getApiKeys(Request $request, string $slug): JsonResponse
     {
-        $app = App::whereSlug($slug)->firstOrFail();
+        $user = $request->user();
+        $app = App::where('user_id', $user->id)->whereSlug($slug)->firstOrFail();
+
+        return $this->success($app->tokens);
+    }
+
+    public function deleteApiKey(Request $request, string $slug, $key): JsonResponse
+    {
+        $user = $request->user();
+        $app = App::where('user_id', $user->id)->whereSlug($slug)->firstOrFail();
         $key = $app->tokens()->findOrFail($key);
         $key->delete();
 
-        return $this->noContent();
+        return $this->success(null, __('oauth-apps.api_key_deleted'), 204);
     }
 }
